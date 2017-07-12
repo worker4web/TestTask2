@@ -2,6 +2,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
+
 public class TestTask2 {
 
     public static void main(String[] args) {
@@ -15,26 +19,24 @@ public class TestTask2 {
 
         System.out.println(compare(a,b));
 
-        System.out.println(compareByMap(a,b));
+        System.out.println(compareStream(a,b));
     }
 
-    public static boolean compareByMap(String a, String b) {
-        Map<Integer, Integer> mapA = new HashMap<>();
-        if(a.length()!=b.length())
-            return false;
-        else
-        {
-            for(int i=0;i<a.length();i++)
-                mapA.put((int)a.charAt(i), 1);
+    public static boolean compareStream(String str1, String str2) {
 
-            for(int i=0;i<b.length();i++) {
-                if(mapA.get((int)b.charAt(i))!=null)
-                    mapA.remove((int)b.charAt(i));
-                else
-                    return false;
+        Map<Character, Long> index = str1.chars()
+                .mapToObj(val -> (char) val)
+                .collect(groupingBy(identity(), counting()));
+
+        for (Character symbol : str2.toCharArray()) {
+            if (index.containsKey(symbol)) {
+                index.merge(symbol, 1L, (v1, v2) -> v1 - v2);
+            } else {
+                return false;
             }
-            return true;
         }
+
+        return index.values().stream().mapToLong(Long::longValue).sum() == 0;
     }
 
     public static boolean compare(String a, String b) {
